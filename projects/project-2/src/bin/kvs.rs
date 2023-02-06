@@ -1,9 +1,9 @@
 use clap::{App, AppSettings, Arg, SubCommand};
-use kvs::{KvStore, KvsError, Result};
-use std::env::current_dir;
-use std::process::exit;
+// use kvs::error::KvError;
+use kvs::kv::KvStore;
+use std::{process::exit, str::FromStr};
 
-fn main() -> Result<()> {
+fn main() {
     let matches = App::new(env!("CARGO_PKG_NAME"))
         .version(env!("CARGO_PKG_VERSION"))
         .author(env!("CARGO_PKG_AUTHORS"))
@@ -33,38 +33,43 @@ fn main() -> Result<()> {
         )
         .get_matches();
 
+    let mut kvstore = KvStore::new();
     match matches.subcommand() {
-        ("set", Some(matches)) => {
-            let key = matches.value_of("KEY").unwrap();
-            let value = matches.value_of("VALUE").unwrap();
+        ("set", Some(_matches)) => {
+            let key = _matches.value_of("KEY").unwrap().to_string();
+            let value = _matches.value_of("VALUE").unwrap().to_string();
 
-            let mut store = KvStore::open(current_dir()?)?;
-            store.set(key.to_string(), value.to_string())?;
+            kvstore.set(&key, &value).unwrap();
         }
-        ("get", Some(matches)) => {
-            let key = matches.value_of("KEY").unwrap();
+        ("get", Some(_matches)) => {
+            if let Some(k) = _matches.value_of("KEY") {
+                let key = k.to_string();
 
-            let mut store = KvStore::open(current_dir()?)?;
-            if let Some(value) = store.get(key.to_string())? {
-                println!("{}", value);
-            } else {
-                println!("Key not found");
+                match kvstore.get(&key) {
+                    Ok(value) => {
+                        println!("get key: {}, value: {}", key, value)
+                    }
+                    Err(_) => {
+                        println!("Key not found")
+                    }
+                }
             }
         }
-        ("rm", Some(matches)) => {
-            let key = matches.value_of("KEY").unwrap();
+        ("rm", Some(_matches)) => {
+            if let Some(k) = _matches.value_of("KEY") {
+                let key = k.to_string();
 
-            let mut store = KvStore::open(current_dir()?)?;
-            match store.remove(key.to_string()) {
-                Ok(()) => {}
-                Err(KvsError::KeyNotFound) => {
-                    println!("Key not found");
-                    exit(1);
+                match kvstore.rm(&key) {
+                    Ok(value) => {
+                        println!("remove key: {}, value: {}", key, value);
+                    }
+                    Err(_) => {
+                        println!("Key not found");
+                        exit(1);
+                    }
                 }
-                Err(e) => return Err(e),
             }
         }
         _ => unreachable!(),
     }
-    Ok(())
 }
