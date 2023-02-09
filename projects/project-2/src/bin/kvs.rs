@@ -1,7 +1,9 @@
 use clap::{App, AppSettings, Arg, SubCommand};
-// use kvs::error::KvError;
 use kvs::kv::KvStore;
-use std::{process::exit, str::FromStr};
+use std::fs;
+use std::path::Path;
+use std::process::exit;
+use tempfile::TempDir;
 
 fn main() {
     let matches = App::new(env!("CARGO_PKG_NAME"))
@@ -33,7 +35,9 @@ fn main() {
         )
         .get_matches();
 
-    let mut kvstore = KvStore::new();
+    let temp_dir = TempDir::new().expect("unable to create temporary working directory");
+    println!("{:?}", temp_dir.path());
+    let mut kvstore = KvStore::open(temp_dir.path()).unwrap();
     match matches.subcommand() {
         ("set", Some(_matches)) => {
             let key = _matches.value_of("KEY").unwrap().to_string();
@@ -42,33 +46,42 @@ fn main() {
             kvstore.set(&key, &value).unwrap();
         }
         ("get", Some(_matches)) => {
-            if let Some(k) = _matches.value_of("KEY") {
-                let key = k.to_string();
+            // if let Some(k) = _matches.value_of("KEY") {
+            //     let key = k.to_string();
 
-                match kvstore.get(&key) {
-                    Ok(value) => {
-                        println!("get key: {}, value: {}", key, value)
-                    }
-                    Err(_) => {
-                        println!("Key not found")
-                    }
+            //     match kvstore.get(&key) {
+            //         Ok(value) => {
+            //             println!("get key: {}, value: {}", key, value)
+            //         }
+            //         Err(_) => {
+            //             println!("Key not found")
+            //         }
+            //     }
+            // }
+            let key = _matches.value_of("KEY").unwrap().to_string();
+            match kvstore.get(&key) {
+                Ok(value) => {
+                    println!("{}", value)
+                }
+                Err(_) => {
+                    println!("Key not found")
                 }
             }
         }
         ("rm", Some(_matches)) => {
-            if let Some(k) = _matches.value_of("KEY") {
-                let key = k.to_string();
+            // if let Some(k) = _matches.value_of("KEY") {
+            //     let key = k.to_string();
 
-                match kvstore.rm(&key) {
-                    Ok(value) => {
-                        println!("remove key: {}, value: {}", key, value);
-                    }
-                    Err(_) => {
-                        println!("Key not found");
-                        exit(1);
-                    }
-                }
-            }
+            //     match kvstore.rm(&key) {
+            //         Ok(value) => {
+            //             println!("remove key: {}, value: {}", key, value);
+            //         }
+            //         Err(_) => {
+            //             println!("Key not found");
+            //             exit(1);
+            //         }
+            //     }
+            // }
         }
         _ => unreachable!(),
     }

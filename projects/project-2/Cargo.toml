@@ -7,7 +7,10 @@ edition = "2021"
 
 [dependencies]
 clap = "2.32.0"
-failure= "0.1.8"
+failure = "0.1.8"
+serde = { version = "1.0.152", features = ["derive"] }
+serde_json = "1.0.92"
+tempfile = "3.0.7"
 
 [dev-dependencies]
 assert_cmd = "0.11.0"

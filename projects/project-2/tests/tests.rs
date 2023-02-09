@@ -1,10 +1,11 @@
 use assert_cmd::prelude::*;
-// use kvs::{KvStore, Result};
+use kvs::error::Result;
+use kvs::kv::KvStore;
 use predicates::ord::eq;
 use predicates::str::{contains, is_empty, PredicateStrExt};
 use std::process::Command;
 use tempfile::TempDir;
-use walkdir::WalkDir;
+// use walkdir::WalkDir;
 
 // `kvs` with no args should exit with a non-zero code.
 #[test]
@@ -61,33 +62,33 @@ fn cli_set() {
         .stdout(is_empty());
 }
 
-// #[test]
-// fn cli_get_stored() -> Result<()> {
-//     let temp_dir = TempDir::new().expect("unable to create temporary working directory");
+#[test]
+fn cli_get_stored() -> Result<()> {
+    let temp_dir = TempDir::new().expect("unable to create temporary working directory");
 
-//     let mut store = KvStore::open(temp_dir.path())?;
-//     store.set("key1".to_owned(), "value1".to_owned())?;
-//     store.set("key2".to_owned(), "value2".to_owned())?;
-//     drop(store);
+    let mut store = KvStore::open(temp_dir.path())?;
+    store.set(&"key1".to_owned(), &"value1".to_owned())?;
+    store.set(&"key2".to_owned(), &"value2".to_owned())?;
+    drop(store);
 
-//     Command::cargo_bin("kvs")
-//         .unwrap()
-//         .args(&["get", "key1"])
-//         .current_dir(&temp_dir)
-//         .assert()
-//         .success()
-//         .stdout(eq("value1").trim());
+    Command::cargo_bin("kvs")
+        .unwrap()
+        .args(&["get", "key1"])
+        .current_dir(&temp_dir)
+        .assert()
+        .success()
+        .stdout(eq("value1").trim());
 
-//     Command::cargo_bin("kvs")
-//         .unwrap()
-//         .args(&["get", "key2"])
-//         .current_dir(&temp_dir)
-//         .assert()
-//         .success()
-//         .stdout(eq("value2").trim());
+    Command::cargo_bin("kvs")
+        .unwrap()
+        .args(&["get", "key2"])
+        .current_dir(&temp_dir)
+        .assert()
+        .success()
+        .stdout(eq("value2").trim());
 
-//     Ok(())
-// }
+    Ok(())
+}
 
 // // `kvs rm <KEY>` should print nothing and exit with zero.
 // #[test]
