@@ -12,27 +12,39 @@ pub struct Entity {
 
 pub struct KvStore {
     path: PathBuf,
-    kv_file: File,
     entity: Entity,
 }
 
 impl KvStore {
+    fn deserialize_from_kv_file(path: &Path) -> Result<HashMap<String, String>> {
+        let content = fs::read_to_string(path)?;
+
+        let hash_map: HashMap<String, String> = match serde_json::from_str(&content) {
+            Ok(v) => v,
+            Err(_) => HashMap::new(),
+        };
+
+        Ok(hash_map)
+    }
+
     pub fn open(path: &Path) -> Result<Self> {
         fs::create_dir_all(path)?;
 
         let mut pathbuf = path.to_path_buf();
         pathbuf.push("log-1.json");
-        let file = OpenOptions::new()
+
+        OpenOptions::new()
             .read(true)
             .write(true)
             .create(true)
             .open(&pathbuf)?;
+
+        // 直接将文件信息同步到缓存中
+        let hash_map = KvStore::deserialize_from_kv_file(&pathbuf)?;
+
         Ok(Self {
             path: pathbuf,
-            kv_file: file,
-            entity: Entity {
-                store: HashMap::new(),
-            },
+            entity: Entity { store: hash_map },
         })
     }
 
@@ -42,10 +54,10 @@ impl KvStore {
             // 1. 在缓存中寻找
             Ok(v.clone())
         } else {
-            // 2. 缓存中找不到，在文件中寻找
-            let content = fs::read_to_string(self.path.as_path())?;
-            let dec: HashMap<String, String> = serde_json::from_str(&content).unwrap();
-            if let Some(v) = dec.get(k) {
+            // 2. 缓存中找不到，同步文件信息到缓存中，继续寻找
+            let new_hash_map = KvStore::deserialize_from_kv_file(self.path.as_path())?;
+            cache.clone_from(&new_hash_map);
+            if let Some(v) = cache.get(k) {
                 Ok(v.clone())
             } else {
                 // 3. 都找不到，返回 Key not found
@@ -72,7 +84,7 @@ impl KvStore {
         // 2. 缓存写入文件
         let serialized = serde_json::to_string(&cache).unwrap();
 
-        self.kv_file.write_all(serialized.as_bytes())?;
+        fs::write(self.path.as_path(), serialized.as_bytes())?;
         Ok(())
     }
 }
