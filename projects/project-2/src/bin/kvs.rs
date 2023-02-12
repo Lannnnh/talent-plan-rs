@@ -2,7 +2,7 @@ use clap::{App, AppSettings, Arg, SubCommand};
 use kvs::kv::KvStore;
 // use std::fs;
 use std::path::Path;
-// use std::process::exit;
+use std::process::exit;
 use tempfile::TempDir;
 use std::env;
 
@@ -47,6 +47,7 @@ fn main() {
         }
         ("get", Some(_matches)) => {
             let key = _matches.value_of("KEY").unwrap().to_string();
+
             match kvstore.get(&key) {
                 Ok(value) => {
                     println!("{}", value)
@@ -57,19 +58,17 @@ fn main() {
             }
         }
         ("rm", Some(_matches)) => {
-            // if let Some(k) = _matches.value_of("KEY") {
-            //     let key = k.to_string();
-
-            //     match kvstore.rm(&key) {
-            //         Ok(value) => {
-            //             println!("remove key: {}, value: {}", key, value);
-            //         }
-            //         Err(_) => {
-            //             println!("Key not found");
-            //             exit(1);
-            //         }
-            //     }
-            // }
+            if let Some(k) = _matches.value_of("KEY") {
+                let key = k.to_string();
+                
+                match kvstore.rm(&key) {
+                    Err(_) => {
+                        println!("Key not found");
+                        exit(1);
+                    }
+                    _ => {},
+                }
+            }
         }
         _ => unreachable!(),
     }
