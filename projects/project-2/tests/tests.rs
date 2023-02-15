@@ -282,7 +282,7 @@ fn compaction() -> Result<()> {
         }
 
         let new_size = dir_size();
-        if new_size > current_size {
+        if new_size >= current_size {
             current_size = new_size;
             continue;
         }
