@@ -70,14 +70,14 @@ impl KvStore {
                 Ok(Some(v.clone()))
             } else {
                 // 3. 都找不到，返回 Key not found
-                Err(KvError::KeyNotFound)
+                Ok(None)
             }
         }
     }
 
-    pub fn rm(&mut self, k: &String) -> Result<Option<String>> {
+    pub fn remove(&mut self, k: &String) -> Result<Option<String>> {
         let cache = &mut self.entity.store;
-        let mut value: String = "".to_owned();
+        let value;
         if let Some(v) = cache.remove(k) {
             // 1. 在缓存中找到，直接移除
             value = v;
