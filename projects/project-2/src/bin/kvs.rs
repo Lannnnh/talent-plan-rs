@@ -50,7 +50,9 @@ fn main() {
 
             match kvstore.get(&key) {
                 Ok(value) => {
-                    println!("{}", value)
+                    if let Some(v) = value {
+                        println!("{}", v)
+                    }
                 }
                 Err(_) => {
                     println!("Key not found")

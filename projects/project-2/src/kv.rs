@@ -57,17 +57,17 @@ impl KvStore {
         Ok(s)
     }
 
-    pub fn get(&mut self, k: &String) -> Result<String> {
+    pub fn get(&mut self, k: &String) -> Result<Option<String>> {
         let cache = &mut self.entity.store;
         if let Some(v) = cache.get(k) {
             // 1. 在缓存中寻找
-            Ok(v.clone())
+            Ok(Some(v.clone()))
         } else {
             // 2. 缓存中找不到，同步文件信息到缓存中，继续寻找
             let new_hash_map = KvStore::deserialize_from_kv_file(&self.path)?;
             cache.clone_from(&new_hash_map);
             if let Some(v) = cache.get(k) {
-                Ok(v.clone())
+                Ok(Some(v.clone()))
             } else {
                 // 3. 都找不到，返回 Key not found
                 Err(KvError::KeyNotFound)
