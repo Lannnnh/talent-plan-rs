@@ -37,7 +37,7 @@ impl KvStore {
         fs::create_dir_all(path)?;
 
         let mut pathbuf = path.to_path_buf();
-        pathbuf.push("log-1.json");
+        pathbuf.push("log.json");
 
         OpenOptions::new()
             .read(true)

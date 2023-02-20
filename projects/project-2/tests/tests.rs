@@ -282,12 +282,11 @@ fn compaction() -> Result<()> {
         }
 
         let new_size = dir_size();
-        if new_size >= current_size {
+        if new_size > current_size {
             current_size = new_size;
             continue;
         }
         // Compaction triggered.
-
         drop(store);
         // reopen and check content.
         let mut store = KvStore::open(temp_dir.path())?;
