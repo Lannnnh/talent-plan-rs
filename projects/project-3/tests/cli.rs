@@ -140,16 +140,16 @@ fn client_cli_version() {
         .stdout(contains(env!("CARGO_PKG_VERSION")));
 }
 
-// // `kvs-server -V` should print the version
-// #[test]
-// fn server_cli_version() {
-//     let temp_dir = TempDir::new().unwrap();
-//     let mut cmd = Command::cargo_bin("kvs-server").unwrap();
-//     cmd.args(&["-V"])
-//         .current_dir(&temp_dir)
-//         .assert()
-//         .stdout(contains(env!("CARGO_PKG_VERSION")));
-// }
+// `kvs-server -V` should print the version
+#[test]
+fn server_cli_version() {
+    let temp_dir = TempDir::new().unwrap();
+    let mut cmd = Command::cargo_bin("kvs-server").unwrap();
+    cmd.args(&["-V"])
+        .current_dir(&temp_dir)
+        .assert()
+        .stdout(contains(env!("CARGO_PKG_VERSION")));
+}
 
 // #[test]
 // fn cli_log_configuration() {
