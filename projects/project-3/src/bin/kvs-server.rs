@@ -1,7 +1,9 @@
 // use std::io::{Read, Write};
 // use std::net::{Shutdown, TcpListener, TcpStream};
 // use std::thread;
-use clap::{App, AppSettings, Arg};
+use clap::{App, AppSettings};
+use log::LevelFilter;
+use log::{error, info, warn};
 
 // fn handle_client(mut stream: TcpStream) {
 //     let mut data = [0 as u8; 50]; // using 50 byte buffer
@@ -44,26 +46,25 @@ fn main() {
     // // close the socket server
     // drop(listener);
 
+    // env_logger 默认输出到标准错误 stderr
+    env_logger::builder().filter_level(LevelFilter::Info).init();
+
     let matches = App::new(env!("CARGO_PKG_NAME"))
         .version(env!("CARGO_PKG_VERSION"))
         .author(env!("CARGO_PKG_AUTHORS"))
         .about(env!("CARGO_PKG_DESCRIPTION"))
         .setting(AppSettings::DisableHelpSubcommand)
         .setting(AppSettings::VersionlessSubcommands)
-        .arg(
-            Arg::with_name("addr")
-                .default_value("127.0.0.1:4000")
-                .help("Kv server listening address, with the format IP:PORT"),
-        )
-        .arg(
-            Arg::with_name("engine")
-                .default_value("kvs")
-                .help("Kv server build-in engine"),
+        .args_from_usage(
+            "-a, --addr=[ip:port] 'kv-server listening address'
+            -e, --engine=[type] 'kv-server engine type'",
         )
         .get_matches();
 
-    let addr = matches.value_of("addr").unwrap();
-    let engine = matches.value_of("engine").unwrap();
+    let addr = matches.value_of("addr").unwrap_or("127.0.0.1:4000");
+    let engine = matches.value_of("engine").unwrap_or("kvs");
 
-    println!("addr: {:?}, engine: {:?}", addr, engine);
+    info!("kv-server: {}", env!("CARGO_PKG_VERSION"));
+    info!("listening address: {}", addr);
+    info!("using engine: {}", engine);
 }
